@@ -14,8 +14,8 @@ Scapy
 00 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF  .."3DUfw........
 
 Far Manager
-000000000: 00 00 00 5B 68 65 78 64 ¦ 75 6D 70 5D 00 00 00 00     [hexdump]
-000000010: 00 11 22 33 44 55 66 77 ¦ 88 99 AA BB CC DD EE FF   ?"3DUfwˆ™ª»ÌÝîÿ
+000000000: 00 00 00 5B 68 65 78 64 Â¦ 75 6D 70 5D 00 00 00 00     [hexdump]
+000000010: 00 11 22 33 44 55 66 77 Â¦ 88 99 AA BB CC DD EE FF   ?"3DUfwË†â„¢ÂªÂ»ÃŒÃÃ®Ã¿
 
 
 2. Restore binary data from the formats above as well
@@ -186,39 +186,74 @@ def dump(binary, size=2, sep=' '):
     hexstr = hexstr.decode('ascii')
   return sep.join(chunks(hexstr.upper(), size))
 
+# def dumpgen(data):
+#   '''
+#   Generator that produces strings:
+
+#   '00000000: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................'
+#   '''
+#   generator = genchunks(data, 16)
+#   for addr, d in enumerate(generator):
+#     # 00000000:
+#     line = '%08X: ' % (addr*16)
+#     # 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
+#     dumpstr = dump(d)
+#     line += dumpstr[:8*3]
+#     if len(d) > 8:  # insert separator if needed
+#       line += ' ' + dumpstr[8*3:]
+#     # ................
+#     # calculate indentation, which may be different for the last line
+#     pad = 2
+#     if len(d) < 16:
+#       pad += 3*(16 - len(d))
+#     if len(d) <= 8:
+#       pad += 1
+#     line += ' '*pad
+
+#     for byte in d:
+#       # printable ASCII range 0x20 to 0x7E
+#       if not PY3K:
+#         byte = ord(byte)
+#       if 0x20 <= byte <= 0x7E:
+#         line += chr(byte)
+#       else:
+#         line += '.'
+#     yield line
+
+
+
+'''
+Customized own dumgen, convert hex output to binary output
+'''
 def dumpgen(data):
   '''
   Generator that produces strings:
 
-  '00000000: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................'
+  '00000000: 0000 0000 0000 0000 0000 0000 0000 0000  0000 0000 0000 0000 0000 0000 0000 0000 '
   '''
+  def hex_to_bin(string):
+    temp = ''
+    for v in string.split(' '):
+      if v == '':
+        temp += ' '
+      else:
+        temp += "{0:08b} ".format(int(v, 16))
+    return temp
+
   generator = genchunks(data, 16)
   for addr, d in enumerate(generator):
     # 00000000:
     line = '%08X: ' % (addr*16)
     # 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
     dumpstr = dump(d)
-    line += dumpstr[:8*3]
+    line += hex_to_bin(dumpstr[:8*3])
     if len(d) > 8:  # insert separator if needed
-      line += ' ' + dumpstr[8*3:]
-    # ................
-    # calculate indentation, which may be different for the last line
-    pad = 2
-    if len(d) < 16:
-      pad += 3*(16 - len(d))
-    if len(d) <= 8:
-      pad += 1
-    line += ' '*pad
-
-    for byte in d:
-      # printable ASCII range 0x20 to 0x7E
-      if not PY3K:
-        byte = ord(byte)
-      if 0x20 <= byte <= 0x7E:
-        line += chr(byte)
-      else:
-        line += '.'
+      line += ' ' + hex_to_bin(dumpstr[8*3:])
+    # pdb.set_trace()
     yield line
+
+
+
   
 def hexdump(data, result='print'):
   '''
@@ -385,8 +420,8 @@ def runtest(logfile=None):
 
   far = \
 '''
-000000000: 00 00 00 5B 68 65 78 64 ¦ 75 6D 70 5D 00 00 00 00     [hexdump]
-000000010: 00 11 22 33 44 55 66 77 ¦ 88 99 0A BB CC DD EE FF   ?"3DUfwˆ™ª»ÌÝîÿ
+000000000: 00 00 00 5B 68 65 78 64 Â¦ 75 6D 70 5D 00 00 00 00     [hexdump]
+000000010: 00 11 22 33 44 55 66 77 Â¦ 88 99 0A BB CC DD EE FF   ?"3DUfwË†â„¢ÂªÂ»ÃŒÃÃ®Ã¿
 '''
   echo('restore far format ', linefeed=False)
   assert bin == restore(far), 'far format check failed'
