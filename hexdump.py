@@ -229,7 +229,7 @@ def dumpgen(data):
   '''
   Generator that produces strings:
 
-  '00000000: 0000 0000 0000 0000 0000 0000 0000 0000  0000 0000 0000 0000 0000 0000 0000 0000 '
+  '00000000: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................'
   '''
   def hex_to_bin(string):
     temp = ''
@@ -243,15 +243,14 @@ def dumpgen(data):
   generator = genchunks(data, 16)
   for addr, d in enumerate(generator):
     # 00000000:
-    line = '%08X: ' % (addr*16)
+    # line = '%08X: ' % (addr*16)
+    line = ''
     # 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
     dumpstr = dump(d)
-    line += hex_to_bin(dumpstr[:8*3])
+    line += hex_to_bin(dumpstr[:8*3]).strip()
     if len(d) > 8:  # insert separator if needed
-      line += ' ' + hex_to_bin(dumpstr[8*3:])
-    # pdb.set_trace()
+      line += ' ' + hex_to_bin(dumpstr[8*3:]).strip()
     yield line
-
 
 
   
